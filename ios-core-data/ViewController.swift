@@ -82,7 +82,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     }
     
     private func showEditingOptionAlert(item: Int) {
-        let alert = UIAlertController(title: "Edit Todo", message: nil, preferredStyle: .alert)
+        let alert = UIAlertController(title: "Todo Action", message: nil, preferredStyle: .alert)
         let updateButton = UIAlertAction(title: "Update", style: .default) { _ in
             guard let todo = self.todo?[item] else {
                 return
@@ -91,6 +91,17 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                 self.showUpdateDataAlertForm(todo: todo)
             })
         }
+        let deleteButton = UIAlertAction(title: "Delete", style: .destructive) { _ in
+            guard let todo = self.todo?[item] else {
+                return
+            }
+            self.dismiss(animated: true, completion: {
+                self.deleteData(item: todo)
+                self.readData()
+                self.tableView.reloadData()
+            })
+        }
+        alert.addAction(deleteButton)
         alert.addAction(updateButton)
         self.present(alert, animated: true)
     }
@@ -99,6 +110,9 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         do {
             let todo = Todo(context: context)
             todo.name = nameTextField.text?.capitalized
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "dd/MM/yy hh:mm:ss"
+            todo.date = dateFormatter.string(from: .now)
             try context.save()
         } catch (let error) {
             print(error)
@@ -143,29 +157,13 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
+        let cell = UITableViewCell(style: indexPath.section == 0 ? .default : .value1, reuseIdentifier: "cell")
         guard let todo = self.todo else {
             return UITableViewCell()
         }
-        cell.selectionStyle = .none
+        cell.selectionStyle = indexPath.section == 0 ? .none : .default
         cell.textLabel?.text = indexPath.section == 0 ? "Add Todo" : todo[indexPath.row].name
+        cell.detailTextLabel?.text = todo[indexPath.row].date
         return cell
-    }
-    
-    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        if indexPath.section == 1 {
-            let delete = UIContextualAction(style: .destructive, title: "Delete") { (_, _, _) in
-                guard let todo = self.todo else {
-                    return
-                }
-                self.deleteData(item: todo[indexPath.row])
-                self.readData()
-                self.tableView.reloadData()
-            }
-            let swipeActionConfig = UISwipeActionsConfiguration(actions: [delete])
-            swipeActionConfig.performsFirstActionWithFullSwipe = true
-            return swipeActionConfig
-        }
-        return .none
     }
 }
