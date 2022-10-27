@@ -2,7 +2,7 @@
 //  Todo+CoreDataProperties.swift
 //  ios-core-data
 //
-//  Created by Erwindo Sianipar on 10/26/22.
+//  Created by Erwindo Sianipar on 10/27/22.
 //
 //
 
@@ -17,6 +17,7 @@ extension Todo {
     }
 
     @NSManaged public var name: String?
+    @NSManaged public var date: String?
 
 }
 
